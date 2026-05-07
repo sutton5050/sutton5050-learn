@@ -25,3 +25,7 @@ jobs:
       - name: Deploy to S3
         run: |
           aws s3 sync frontend/ s3://sutton5050-learn-frontend --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id EGMBY8EHZ934H --paths "/*"
