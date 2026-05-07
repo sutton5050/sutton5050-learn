@@ -1,4 +1,4 @@
-name: Deploy Frontend
+name: Deploy
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,3 +29,20 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation --distribution-id EGMBY8EHZ934H --paths "/*"
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Deploy Lambda
+        run: |
+          zip -j backend.zip backend/lambda_function.py
+          aws lambda update-function-code --function-name sutton5050-api --zip-file fileb://backend.zip
