@@ -1,14 +1,97 @@
 import json
+import urllib.request
+
+FPL_BASE = "https://fantasy.premierleague.com/api"
+
+# FPL needs a browser-like User-Agent or it may block the request
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; dashboard/1.0)",
+    "Accept": "application/json",
+}
+
+
+def fetch_json(url):
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=15) as response:
+        return json.loads(response.read().decode())
 
 
 def lambda_handler(event, context):
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Origin": "*"
-        },
-        "body": json.dumps({
-            "message": "Auto deployed from GitHub!",
-            "status": "working"
-        })
+    cors_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
     }
+
+    try:
+        # ── 1. Bootstrap data (teams + league table) ──────────────
+        bootstrap = fetch_json(f"{FPL_BASE}/bootstrap-static/")
+        teams = bootstrap["teams"]
+
+        # Find Liverpool's ID
+        liverpool = next((t for t in teams if t["name"] == "Liverpool"), None)
+        if not liverpool:
+            raise Exception("Liverpool not found in FPL data")
+        liverpool_id = liverpool["id"]
+
+        # Build Premier League table sorted by position
+        pl_table = sorted(teams, key=lambda t: t["position"])
+        table_data = [
+            {
+                "position": t["position"],
+                "name": t["name"],
+                "played": t["played"],
+                "won": t["win"],
+                "drawn": t["draw"],
+                "lost": t["loss"],
+                "gf": t["goals_scored"],
+                "ga": t["goals_conceded"],
+                "gd": t["goals_scored"] - t["goals_conceded"],
+                "points": t["points"],
+            }
+            for t in pl_table
+        ]
+
+        # ── 2. Fixtures ───────────────────────────────────────────
+        fixtures_raw = fetch_json(f"{FPL_BASE}/fixtures/")
+
+        # Liverpool's next 5 unplayed fixtures
+        upcoming = [
+            f
+            for f in fixtures_raw
+            if (f["team_h"] == liverpool_id or f["team_a"] == liverpool_id)
+            and not f.get("finished", False)
+        ][:5]
+
+        team_map = {t["id"]: t["name"] for t in teams}
+
+        fixtures_data = [
+            {
+                "opponent": team_map.get(
+                    f["team_a"] if f["team_h"] == liverpool_id else f["team_h"],
+                    "Unknown",
+                ),
+                "home_away": "Home" if f["team_h"] == liverpool_id else "Away",
+                "kickoff": f.get("kickoff_time"),
+                "gameweek": f.get("event"),
+            }
+            for f in upcoming
+        ]
+
+        # ── 3. Return everything ──────────────────────────────────
+        return {
+            "statusCode": 200,
+            "headers": cors_headers,
+            "body": json.dumps(
+                {
+                    "liverpool_fixtures": fixtures_data,
+                    "pl_table": table_data,
+                }
+            ),
+        }
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "headers": cors_headers,
+            "body": json.dumps({"error": str(e)}),
+        }

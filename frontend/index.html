@@ -2,22 +2,465 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Sutton5050</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <style>
+      /* ── Variables ─────────────────────────────────────────────── */
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --border: #2a2d3a;
+        --text: #e2e8f0;
+        --muted: #64748b;
+        --red: #c8102e;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+      }
+
+      /* ── Login page ────────────────────────────────────────────── */
+      #login {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      .login-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 48px 40px;
+        width: 340px;
+        text-align: center;
+      }
+
+      .login-box h1 {
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+      }
+
+      .login-box p {
+        color: var(--muted);
+        font-size: 0.875rem;
+        margin-bottom: 28px;
+      }
+
+      .login-box input {
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 1rem;
+        margin-bottom: 12px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .login-box input:focus {
+        border-color: var(--red);
+      }
+
+      .login-box button {
+        width: 100%;
+        padding: 12px;
+        background: var(--red);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      .login-box button:hover {
+        opacity: 0.85;
+      }
+
+      .error-msg {
+        color: #f87171;
+        font-size: 0.8rem;
+        margin-top: 10px;
+        min-height: 1.2em;
+      }
+
+      /* ── Dashboard ─────────────────────────────────────────────── */
+      #dashboard {
+        display: none;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 16px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      header h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      #last-updated {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      /* ── Cards ─────────────────────────────────────────────────── */
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      @media (max-width: 680px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .card-header h2 {
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .badge {
+        background: var(--red);
+        color: white;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .card-body {
+        padding: 8px 20px 16px;
+      }
+
+      /* ── Fixtures ──────────────────────────────────────────────── */
+      .fixture {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .fixture:last-child {
+        border-bottom: none;
+      }
+
+      .fixture-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .fixture-teams {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .ha {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .ha-home {
+        background: #1a3a28;
+        color: #4ade80;
+      }
+      .ha-away {
+        background: #2a1a1a;
+        color: #f87171;
+      }
+
+      .fixture-date {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      /* ── Table ─────────────────────────────────────────────────── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: center;
+      }
+
+      th:nth-child(2) {
+        text-align: left;
+      }
+
+      td {
+        padding: 7px 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: center;
+        color: var(--muted);
+      }
+
+      td:first-child {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      td:nth-child(2) {
+        text-align: left;
+        color: var(--text);
+      }
+      td.pts {
+        color: var(--text) !important;
+        font-weight: 700;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .lfc td {
+        color: var(--red) !important;
+        font-weight: 600;
+      }
+      .lfc td:nth-child(2) {
+        color: var(--red) !important;
+      }
+      .lfc td.pts {
+        color: var(--red) !important;
+      }
+
+      /* ── Loading / error ───────────────────────────────────────── */
+      .loading,
+      .empty {
+        color: var(--muted);
+        text-align: center;
+        padding: 32px 0;
+        font-size: 0.875rem;
+      }
+
+      .err {
+        color: #f87171;
+        text-align: center;
+        padding: 24px 0;
+        font-size: 0.875rem;
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello from sutton5050-web</h1>
-    <p>This is my learning project - auto deployed with GitHub Actions!</p>
+    <!-- ── Login ──────────────────────────────────────────────── -->
+    <div id="login">
+      <div class="login-box">
+        <h1>⚽ Dashboard</h1>
+        <p>Enter your password to continue</p>
+        <input
+          type="password"
+          id="pw"
+          placeholder="Password"
+          onkeydown="if (event.key === 'Enter') login();"
+          autofocus
+        />
+        <button onclick="login()">Sign In</button>
+        <p class="error-msg" id="pw-error"></p>
+      </div>
+    </div>
 
-    <button onclick="callApi()">Call Python Backend</button>
-    <p id="result"></p>
+    <!-- ── Dashboard ──────────────────────────────────────────── -->
+    <div id="dashboard">
+      <header>
+        <h1>⚽ Dashboard</h1>
+        <span id="last-updated"></span>
+      </header>
+
+      <div class="cards">
+        <!-- Liverpool fixtures -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Liverpool</h2>
+            <span class="badge">Next fixtures</span>
+          </div>
+          <div class="card-body" id="fixtures-body">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Premier League table -->
+        <div class="card">
+          <div class="card-header">
+            <h2>Premier League</h2>
+            <span class="badge">Table</span>
+          </div>
+          <div class="card-body" id="table-body">
+            <div class="loading">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
-      async function callApi() {
-        const response = await fetch(
-          "https://bo3h2jkgb5.execute-api.eu-west-2.amazonaws.com/hello",
-        );
-        const data = await response.json();
-        document.getElementById("result").textContent = data.message;
+      // ── Config ───────────────────────────────────────────────────
+      // Change PASSWORD to whatever you like
+      const PASSWORD = "liverpool";
+      const API_URL =
+        "https://bo3h2jkgb5.execute-api.eu-west-2.amazonaws.com/hello";
+
+      // ── Auth ─────────────────────────────────────────────────────
+      function login() {
+        const val = document.getElementById("pw").value;
+        if (val === PASSWORD) {
+          sessionStorage.setItem("auth", "1");
+          showDashboard();
+        } else {
+          document.getElementById("pw-error").textContent =
+            "Incorrect password";
+          document.getElementById("pw").value = "";
+          document.getElementById("pw").focus();
+        }
+      }
+
+      function showDashboard() {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadData();
+      }
+
+      // Auto-login if already authenticated this session
+      if (sessionStorage.getItem("auth") === "1") showDashboard();
+
+      // ── Data ─────────────────────────────────────────────────────
+      async function loadData() {
+        try {
+          const res = await fetch(API_URL);
+          const data = await res.json();
+          renderFixtures(data.liverpool_fixtures);
+          renderTable(data.pl_table);
+          document.getElementById("last-updated").textContent =
+            "Updated " + new Date().toLocaleTimeString("en-GB");
+        } catch (e) {
+          setError("fixtures-body");
+          setError("table-body");
+        }
+      }
+
+      function setError(id) {
+        document.getElementById(id).innerHTML =
+          '<p class="err">Could not load data</p>';
+      }
+
+      // ── Fixtures renderer ─────────────────────────────────────────
+      function renderFixtures(fixtures) {
+        const el = document.getElementById("fixtures-body");
+
+        if (!fixtures || fixtures.length === 0) {
+          el.innerHTML = '<p class="empty">No upcoming fixtures</p>';
+          return;
+        }
+
+        el.innerHTML = fixtures
+          .map((f) => {
+            const haClass = f.home_away === "Home" ? "ha-home" : "ha-away";
+            const haLabel = f.home_away === "Home" ? "H" : "A";
+            const date = f.kickoff ? fmtDate(f.kickoff) : "TBC";
+
+            return `
+          <div class="fixture">
+            <div class="fixture-left">
+              <span class="fixture-teams">vs ${f.opponent}</span>
+              <span class="ha ${haClass}">${haLabel}</span>
+            </div>
+            <span class="fixture-date">${date}</span>
+          </div>`;
+          })
+          .join("");
+      }
+
+      // ── Table renderer ────────────────────────────────────────────
+      function renderTable(table) {
+        const el = document.getElementById("table-body");
+
+        if (!table || table.length === 0) {
+          el.innerHTML = '<p class="empty">No data available</p>';
+          return;
+        }
+
+        const rows = table
+          .map(
+            (t) => `
+        <tr class="${t.name === "Liverpool" ? "lfc" : ""}">
+          <td>${t.position}</td>
+          <td>${t.name}</td>
+          <td>${t.played}</td>
+          <td>${t.gd > 0 ? "+" + t.gd : t.gd}</td>
+          <td class="pts">${t.points}</td>
+        </tr>`,
+          )
+          .join("");
+
+        el.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      }
+
+      // ── Helpers ───────────────────────────────────────────────────
+      function fmtDate(iso) {
+        return new Date(iso).toLocaleDateString("en-GB", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
     </script>
   </body>
