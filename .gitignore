@@ -1,0 +1,4 @@
+# CDK
+infrastructure/.venv/
+infrastructure/cdk.out/
+infrastructure/dist-config*.json

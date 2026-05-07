@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy-frontend:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,27 +22,22 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: eu-west-2
 
-      - name: Deploy to S3
-        run: |
-          aws s3 sync frontend/ s3://sutton5050-web-frontend --delete
-
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation --distribution-id EGMBY8EHZ934H --paths "/*"
-
-  deploy-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-2
+          node-version: "22"
 
-      - name: Deploy Lambda
-        run: |
-          zip -j backend.zip backend/lambda_function.py
-          aws lambda update-function-code --function-name sutton5050-api --zip-file fileb://backend.zip
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r infrastructure/requirements.txt
+
+      - name: Deploy
+        run: cdk deploy --all --require-approval never
+        working-directory: infrastructure
