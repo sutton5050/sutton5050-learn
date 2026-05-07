@@ -34,19 +34,19 @@ def lambda_handler(event, context):
         liverpool_id = liverpool["id"]
 
         # Build Premier League table sorted by position
-        pl_table = sorted(teams, key=lambda t: t["position"])
+        pl_table = sorted(teams, key=lambda t: t.get("position", 99))
         table_data = [
             {
-                "position": t["position"],
+                "position": t.get("position", 0),
                 "name": t["name"],
-                "played": t["played"],
-                "won": t["win"],
-                "drawn": t["draw"],
-                "lost": t["loss"],
-                "gf": t["goals_scored"],
-                "ga": t["goals_conceded"],
-                "gd": t["goals_scored"] - t["goals_conceded"],
-                "points": t["points"],
+                "played": t.get("played", 0),
+                "won": t.get("win", 0),
+                "drawn": t.get("draw", 0),
+                "lost": t.get("loss", 0),
+                "gf": t.get("goals_scored", 0),
+                "ga": t.get("goals_conceded", 0),
+                "gd": t.get("goals_scored", 0) - t.get("goals_conceded", 0),
+                "points": t.get("points", 0),
             }
             for t in pl_table
         ]
