@@ -125,6 +125,22 @@
         font-size: 0.8rem;
       }
 
+      .logout-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .logout-btn:hover {
+        border-color: var(--red);
+        color: var(--red);
+      }
+
       /* ── Cards ─────────────────────────────────────────────────── */
       .cards {
         display: grid;
@@ -314,7 +330,10 @@
     <div id="dashboard">
       <header>
         <h1>⚽ Dashboard</h1>
-        <span id="last-updated"></span>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span id="last-updated"></span>
+          <button class="logout-btn" onclick="logout()">Sign out</button>
+        </div>
       </header>
 
       <div class="cards">
@@ -367,6 +386,15 @@
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
         loadData();
+      }
+
+      function logout() {
+        sessionStorage.removeItem("auth");
+        document.getElementById("dashboard").style.display = "none";
+        document.getElementById("login").style.display = "flex";
+        document.getElementById("pw").value = "";
+        document.getElementById("pw-error").textContent = "";
+        document.getElementById("pw").focus();
       }
 
       // Auto-login if already authenticated this session
