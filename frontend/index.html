@@ -7,5 +7,18 @@
   <body>
     <h1>Hello from sutton5050.com</h1>
     <p>This is my learning project - auto deployed with GitHub Actions!</p>
+
+    <button onclick="callApi()">Call Python Backend</button>
+    <p id="result"></p>
+
+    <script>
+      async function callApi() {
+        const response = await fetch(
+          "https://bo3h2jkgb5.execute-api.eu-west-2.amazonaws.com/hello",
+        );
+        const data = await response.json();
+        document.getElementById("result").textContent = data.message;
+      }
+    </script>
   </body>
 </html>
