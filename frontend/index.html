@@ -346,8 +346,7 @@
       // ── Config ───────────────────────────────────────────────────
       // Change PASSWORD to whatever you like
       const PASSWORD = "liverpool";
-      const API_URL =
-        "https://bo3h2jkgb5.execute-api.eu-west-2.amazonaws.com/hello";
+      const FPL = "https://fantasy.premierleague.com/api";
 
       // ── Auth ─────────────────────────────────────────────────────
       function login() {
@@ -375,10 +374,44 @@
       // ── Data ─────────────────────────────────────────────────────
       async function loadData() {
         try {
-          const res = await fetch(API_URL);
-          const data = await res.json();
-          renderFixtures(data.liverpool_fixtures);
-          renderTable(data.pl_table);
+          // Fetch bootstrap data (teams + table) and fixtures in parallel
+          const [bootstrap, fixturesRaw] = await Promise.all([
+            fetch(`${FPL}/bootstrap-static/`).then((r) => r.json()),
+            fetch(`${FPL}/fixtures/`).then((r) => r.json()),
+          ]);
+
+          const teams = bootstrap.teams;
+
+          // Premier League table
+          const table = [...teams]
+            .sort((a, b) => (a.position || 99) - (b.position || 99))
+            .map((t) => ({
+              position: t.position || 0,
+              name: t.name,
+              played: t.played || 0,
+              gd: (t.goals_scored || 0) - (t.goals_conceded || 0),
+              points: t.points || 0,
+            }));
+
+          // Liverpool fixtures
+          const lfc = teams.find((t) => t.name === "Liverpool");
+          const lfcId = lfc ? lfc.id : null;
+          const teamMap = Object.fromEntries(teams.map((t) => [t.id, t.name]));
+
+          const upcoming = fixturesRaw
+            .filter(
+              (f) =>
+                (f.team_h === lfcId || f.team_a === lfcId) && !f.finished,
+            )
+            .slice(0, 5)
+            .map((f) => ({
+              opponent: teamMap[f.team_h === lfcId ? f.team_a : f.team_h],
+              home_away: f.team_h === lfcId ? "Home" : "Away",
+              kickoff: f.kickoff_time,
+            }));
+
+          renderFixtures(upcoming);
+          renderTable(table);
           document.getElementById("last-updated").textContent =
             "Updated " + new Date().toLocaleTimeString("en-GB");
         } catch (e) {
