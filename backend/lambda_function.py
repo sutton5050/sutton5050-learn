@@ -3,10 +3,13 @@ import urllib.request
 
 FPL_BASE = "https://fantasy.premierleague.com/api"
 
-# FPL needs a browser-like User-Agent or it may block the request
+# FPL blocks requests without proper browser headers
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; dashboard/1.0)",
-    "Accept": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-GB,en;q=0.9",
+    "Referer": "https://fantasy.premierleague.com/",
+    "Origin": "https://fantasy.premierleague.com",
 }
 
 
