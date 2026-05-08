@@ -88,15 +88,6 @@ def lambda_handler(event, context):
             else:
                 result = "L"
 
-            goals = [
-                {
-                    "scorer": g.get("scorer", {}).get("name", "Unknown"),
-                    "minute": g.get("minute"),
-                    "selected": g.get("team", {}).get("id") == team_id,
-                }
-                for g in m.get("goals", [])
-            ]
-
             last_5.append({
                 "opponent": m["awayTeam"]["shortName"] if is_home else m["homeTeam"]["shortName"],
                 "home_away": "Home" if is_home else "Away",
@@ -104,7 +95,6 @@ def lambda_handler(event, context):
                 "score_team": team_score,
                 "score_opp": opp_score,
                 "result": result,
-                "goals": goals,
             })
 
         # ── Return ────────────────────────────────────────────────
