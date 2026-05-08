@@ -66,7 +66,7 @@ def lambda_handler(event, context):
         date_from = (today - timedelta(days=120)).strftime("%Y-%m-%d")
         date_to = today.strftime("%Y-%m-%d")
         results_data = fetch_json(
-            f"{BASE}/teams/{LIVERPOOL_ID}/matches?status=FINISHED"
+            f"{BASE}/teams/{team_id}/matches?status=FINISHED"
             f"&dateFrom={date_from}&dateTo={date_to}"
         )
         finished = results_data.get("matches", [])
