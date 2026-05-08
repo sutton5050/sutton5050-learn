@@ -125,6 +125,22 @@
         font-size: 0.8rem;
       }
 
+      .team-select {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .team-select:focus {
+        border-color: var(--red);
+      }
+
       .logout-btn {
         background: none;
         border: 1px solid var(--border);
@@ -403,6 +419,9 @@
     <div id="dashboard">
       <header>
         <h1>⚽ Dashboard</h1>
+        <select id="team-select" class="team-select" onchange="onTeamChange()">
+          <option value="64">Liverpool</option>
+        </select>
         <div style="display: flex; align-items: center; gap: 16px">
           <span id="last-updated"></span>
           <button class="logout-btn" onclick="logout()">Sign out</button>
@@ -410,10 +429,10 @@
       </header>
 
       <div class="cards">
-        <!-- Liverpool fixtures -->
+        <!-- Selected team fixtures -->
         <div class="card">
           <div class="card-header">
-            <h2>Liverpool</h2>
+            <h2 id="fixtures-team">Liverpool</h2>
             <span class="badge">Next fixtures</span>
           </div>
           <div class="card-body" id="fixtures-body">
@@ -435,7 +454,7 @@
         <!-- Last 5 results -->
         <div class="card card-full">
           <div class="card-header">
-            <h2>Liverpool</h2>
+            <h2 id="results-team">Liverpool</h2>
             <span class="badge">Last 5 Results</span>
           </div>
           <div class="card-body" id="results-body">
@@ -447,10 +466,11 @@
 
     <script>
       // ── Config ───────────────────────────────────────────────────
-      // Change PASSWORD to whatever you like
       const PASSWORD = "liverpool";
       const API_URL =
         "https://vvl4dwmcrj.execute-api.eu-west-2.amazonaws.com/prod/";
+
+      let selectedTeamId = 64;
 
       // ── Auth ─────────────────────────────────────────────────────
       function login() {
@@ -487,8 +507,12 @@
       // ── Data ─────────────────────────────────────────────────────
       async function loadData() {
         try {
-          const res = await fetch(API_URL);
+          const res = await fetch(`${API_URL}?teamId=${selectedTeamId}`);
           const data = await res.json();
+          const teamName = getSelectedTeamName();
+          document.getElementById("fixtures-team").textContent = teamName;
+          document.getElementById("results-team").textContent = teamName;
+          populateTeamDropdown(data.pl_table);
           renderFixtures(data.liverpool_fixtures);
           renderTable(data.pl_table);
           renderResults(data.liverpool_results);
@@ -499,6 +523,27 @@
           setError("table-body");
           setError("results-body");
         }
+      }
+
+      function onTeamChange() {
+        selectedTeamId = parseInt(document.getElementById("team-select").value);
+        loadData();
+      }
+
+      function getSelectedTeamName() {
+        const sel = document.getElementById("team-select");
+        return sel.options[sel.selectedIndex]?.text || "Liverpool";
+      }
+
+      function populateTeamDropdown(table) {
+        const sel = document.getElementById("team-select");
+        const sorted = [...table].sort((a, b) => a.name.localeCompare(b.name));
+        sel.innerHTML = sorted
+          .map(
+            (t) =>
+              `<option value="${t.id}"${t.id === selectedTeamId ? " selected" : ""}>${t.name}</option>`,
+          )
+          .join("");
       }
 
       function setError(id) {
@@ -545,7 +590,7 @@
         const rows = table
           .map(
             (t) => `
-        <tr class="${t.name === "Liverpool" ? "lfc" : ""}">
+        <tr class="${t.id === selectedTeamId ? "lfc" : ""}">
           <td>${t.position}</td>
           <td>${t.name}</td>
           <td>${t.played}</td>
@@ -581,12 +626,12 @@
             const haLabel = r.home_away === "Home" ? "H" : "A";
             const resultClass = { W: "result-w", D: "result-d", L: "result-l" }[r.result] || "result-d";
             const date = r.date ? fmtDate(r.date) : "TBC";
-            const score = `${r.score_lfc ?? "?"}–${r.score_opp ?? "?"}`;
+            const score = `${r.score_team ?? "?"}–${r.score_opp ?? "?"}`;
 
             const goalsHtml = r.goals.length
               ? r.goals
                   .map((g) => {
-                    const cls = g.lfc ? "goal-lfc" : "goal-opp";
+                    const cls = g.selected ? "goal-lfc" : "goal-opp";
                     const min = g.minute != null ? `${g.minute}'` : "";
                     return `<span class="${cls}">${g.scorer}${min ? " " + min : ""}</span>`;
                   })

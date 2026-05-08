@@ -21,6 +21,9 @@ def lambda_handler(event, context):
     }
 
     try:
+        params = event.get("queryStringParameters") or {}
+        team_id = int(params.get("teamId", LIVERPOOL_ID))
+
         # ── Premier League table ──────────────────────────────────
         standings_data = fetch_json(f"{BASE}/competitions/PL/standings")
         table_entries = standings_data["standings"][0]["table"]
@@ -28,6 +31,7 @@ def lambda_handler(event, context):
         pl_table = [
             {
                 "position": e["position"],
+                "id": e["team"]["id"],
                 "name": e["team"]["shortName"],
                 "played": e["playedGames"],
                 "gd": e["goalDifference"],
@@ -36,9 +40,9 @@ def lambda_handler(event, context):
             for e in table_entries
         ]
 
-        # ── Liverpool upcoming fixtures ───────────────────────────
+        # ── Selected team upcoming fixtures ───────────────────────
         matches_data = fetch_json(
-            f"{BASE}/teams/{LIVERPOOL_ID}/matches?status=SCHEDULED&limit=5"
+            f"{BASE}/teams/{team_id}/matches?status=SCHEDULED&limit=5"
         )
         matches = matches_data.get("matches", [])
 
@@ -46,18 +50,18 @@ def lambda_handler(event, context):
             {
                 "opponent": (
                     m["awayTeam"]["shortName"]
-                    if m["homeTeam"]["id"] == LIVERPOOL_ID
+                    if m["homeTeam"]["id"] == team_id
                     else m["homeTeam"]["shortName"]
                 ),
                 "home_away": (
-                    "Home" if m["homeTeam"]["id"] == LIVERPOOL_ID else "Away"
+                    "Home" if m["homeTeam"]["id"] == team_id else "Away"
                 ),
                 "kickoff": m.get("utcDate"),
             }
             for m in matches[:5]
         ]
 
-        # ── Liverpool last 5 results ──────────────────────────────
+        # ── Selected team last 5 results ──────────────────────────
         today = datetime.utcnow()
         date_from = (today - timedelta(days=120)).strftime("%Y-%m-%d")
         date_to = today.strftime("%Y-%m-%d")
@@ -70,16 +74,16 @@ def lambda_handler(event, context):
 
         last_5 = []
         for m in finished[:5]:
-            is_home = m["homeTeam"]["id"] == LIVERPOOL_ID
+            is_home = m["homeTeam"]["id"] == team_id
             ft = m["score"]["fullTime"]
-            lfc_score = ft["home"] if is_home else ft["away"]
+            team_score = ft["home"] if is_home else ft["away"]
             opp_score = ft["away"] if is_home else ft["home"]
 
-            if lfc_score is None or opp_score is None:
+            if team_score is None or opp_score is None:
                 result = "?"
-            elif lfc_score > opp_score:
+            elif team_score > opp_score:
                 result = "W"
-            elif lfc_score == opp_score:
+            elif team_score == opp_score:
                 result = "D"
             else:
                 result = "L"
@@ -88,7 +92,7 @@ def lambda_handler(event, context):
                 {
                     "scorer": g.get("scorer", {}).get("name", "Unknown"),
                     "minute": g.get("minute"),
-                    "lfc": g.get("team", {}).get("id") == LIVERPOOL_ID,
+                    "selected": g.get("team", {}).get("id") == team_id,
                 }
                 for g in m.get("goals", [])
             ]
@@ -97,7 +101,7 @@ def lambda_handler(event, context):
                 "opponent": m["awayTeam"]["shortName"] if is_home else m["homeTeam"]["shortName"],
                 "home_away": "Home" if is_home else "Away",
                 "date": m.get("utcDate"),
-                "score_lfc": lfc_score,
+                "score_team": team_score,
                 "score_opp": opp_score,
                 "result": result,
                 "goals": goals,
