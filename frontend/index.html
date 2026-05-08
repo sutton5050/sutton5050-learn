@@ -326,7 +326,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 11px 0 4px;
+        padding: 11px 0;
       }
 
       .result-left {
@@ -362,22 +362,6 @@
         font-weight: 700;
         color: var(--text);
         letter-spacing: 0.04em;
-      }
-
-      .result-goals {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 2px 0 10px;
-        font-size: 0.78rem;
-      }
-
-      .goal-lfc {
-        color: var(--red);
-      }
-
-      .goal-opp {
-        color: var(--muted);
       }
 
       /* ── Loading / error ───────────────────────────────────────── */
@@ -624,19 +608,11 @@
           .map((r) => {
             const haClass = r.home_away === "Home" ? "ha-home" : "ha-away";
             const haLabel = r.home_away === "Home" ? "H" : "A";
-            const resultClass = { W: "result-w", D: "result-d", L: "result-l" }[r.result] || "result-d";
+            const resultClass =
+              { W: "result-w", D: "result-d", L: "result-l" }[r.result] ||
+              "result-d";
             const date = r.date ? fmtDate(r.date) : "TBC";
             const score = `${r.score_team ?? "?"}–${r.score_opp ?? "?"}`;
-
-            const goalsHtml = r.goals.length
-              ? r.goals
-                  .map((g) => {
-                    const cls = g.selected ? "goal-lfc" : "goal-opp";
-                    const min = g.minute != null ? `${g.minute}'` : "";
-                    return `<span class="${cls}">${g.scorer}${min ? " " + min : ""}</span>`;
-                  })
-                  .join("")
-              : '<span class="goal-opp">No goals recorded</span>';
 
             return `
               <div class="result-entry">
@@ -649,7 +625,6 @@
                   </div>
                   <span class="fixture-date">${date}</span>
                 </div>
-                <div class="result-goals">${goalsHtml}</div>
               </div>`;
           })
           .join("");
