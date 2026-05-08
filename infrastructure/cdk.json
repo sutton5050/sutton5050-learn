@@ -1,6 +1,3 @@
 {
-  "app": "python app.py",
-  "context": {
-    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true
-  }
+  "app": "python app.py"
 }

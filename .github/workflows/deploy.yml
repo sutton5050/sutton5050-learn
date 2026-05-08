@@ -12,8 +12,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -35,9 +36,27 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Python dependencies
+      - name: Install CDK dependencies
         run: pip install -r infrastructure/requirements.txt
 
-      - name: Deploy
-        run: cdk deploy --all --require-approval never
+      # Deploy backend first so we can read the API URL
+      - name: Deploy backend
+        run: cdk deploy PasswordManagerBackend --require-approval never
+        working-directory: infrastructure
+
+      # Write config.json with the live API URL before frontend deploys
+      - name: Write frontend config
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name PasswordManagerBackend \
+            --region eu-west-2 \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --output text)
+          # Strip trailing slash
+          API_URL="${API_URL%/}"
+          echo "{\"apiUrl\": \"${API_URL}\"}" > frontend/config.json
+          echo "API URL written: $API_URL"
+
+      - name: Deploy frontend
+        run: cdk deploy PasswordManagerFrontend --require-approval never
         working-directory: infrastructure

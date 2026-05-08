@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>Password Manager</title>
     <style>
       /* ── Variables ─────────────────────────────────────────────── */
       :root {
@@ -12,24 +12,23 @@
         --border: #2a2d3a;
         --text: #e2e8f0;
         --muted: #64748b;
-        --red: #c8102e;
+        --accent: #3b82f6;
+        --accent-dim: #1e3a5f;
+        --danger: #ef4444;
+        --danger-dim: #3a1a1a;
+        --success: #22c55e;
       }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
         background: var(--bg);
         color: var(--text);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         min-height: 100vh;
       }
 
-      /* ── Login page ────────────────────────────────────────────── */
+      /* ── Login ─────────────────────────────────────────────────── */
       #login {
         display: flex;
         align-items: center;
@@ -42,24 +41,17 @@
         border: 1px solid var(--border);
         border-radius: 16px;
         padding: 48px 40px;
-        width: 340px;
+        width: 360px;
         text-align: center;
       }
 
-      .login-box h1 {
-        font-size: 1.6rem;
-        margin-bottom: 8px;
-      }
+      .login-box .icon { font-size: 2.5rem; margin-bottom: 12px; }
+      .login-box h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+      .login-box p { color: var(--muted); font-size: 0.875rem; margin-bottom: 28px; }
 
-      .login-box p {
-        color: var(--muted);
-        font-size: 0.875rem;
-        margin-bottom: 28px;
-      }
-
-      .login-box input {
+      .input {
         width: 100%;
-        padding: 12px 16px;
+        padding: 11px 14px;
         background: var(--bg);
         border: 1px solid var(--border);
         border-radius: 8px;
@@ -70,38 +62,34 @@
         transition: border-color 0.2s;
       }
 
-      .login-box input:focus {
-        border-color: var(--red);
-      }
+      .input:focus { border-color: var(--accent); }
 
-      .login-box button {
-        width: 100%;
-        padding: 12px;
-        background: var(--red);
-        color: white;
+      .btn {
+        padding: 11px 20px;
         border: none;
         border-radius: 8px;
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
         transition: opacity 0.2s;
       }
-
-      .login-box button:hover {
-        opacity: 0.85;
+      .btn:hover { opacity: 0.85; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+      .btn-ghost {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--muted);
       }
+      .btn-ghost:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+      .btn-danger { background: var(--danger); color: #fff; font-size: 0.8rem; padding: 5px 12px; }
 
-      .error-msg {
-        color: #f87171;
-        font-size: 0.8rem;
-        margin-top: 10px;
-        min-height: 1.2em;
-      }
+      .error-msg { color: #f87171; font-size: 0.8rem; margin-top: 10px; min-height: 1.2em; }
 
-      /* ── Dashboard ─────────────────────────────────────────────── */
-      #dashboard {
+      /* ── Vault ─────────────────────────────────────────────────── */
+      #vault {
         display: none;
-        max-width: 1100px;
+        max-width: 960px;
         margin: 0 auto;
         padding: 28px 16px;
       }
@@ -110,535 +98,550 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
         padding-bottom: 16px;
         border-bottom: 1px solid var(--border);
       }
 
-      header h1 {
-        font-size: 1.4rem;
-        font-weight: 700;
-      }
+      header h1 { font-size: 1.3rem; font-weight: 700; }
 
-      #last-updated {
-        color: var(--muted);
-        font-size: 0.8rem;
-      }
+      .header-right { display: flex; align-items: center; gap: 12px; }
 
-      .team-select {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text);
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-
-      .team-select:focus {
-        border-color: var(--red);
-      }
-
-      .logout-btn {
-        background: none;
-        border: 1px solid var(--border);
-        color: var(--muted);
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-
-      .logout-btn:hover {
-        border-color: var(--red);
-        color: var(--red);
-      }
-
-      /* ── Cards ─────────────────────────────────────────────────── */
-      .cards {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
-
-      @media (max-width: 680px) {
-        .cards {
-          grid-template-columns: 1fr;
-        }
-      }
-
+      /* ── Add form card ──────────────────────────────────────────── */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
         overflow: hidden;
+        margin-bottom: 20px;
       }
 
       .card-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .card-header h2 {
-        font-size: 1rem;
-        font-weight: 600;
-      }
-
-      .badge {
-        background: var(--red);
-        color: white;
-        font-size: 0.68rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 99px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-      }
-
-      .card-body {
-        padding: 8px 20px 16px;
-      }
-
-      /* ── Fixtures ──────────────────────────────────────────────── */
-      .fixture {
-        display: flex;
-        align-items: center;
         justify-content: space-between;
-        padding: 11px 0;
+        padding: 14px 20px;
         border-bottom: 1px solid var(--border);
       }
 
-      .fixture:last-child {
-        border-bottom: none;
+      .card-header h2 { font-size: 0.95rem; font-weight: 600; }
+
+      .card-body { padding: 16px 20px; }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 10px;
+        align-items: end;
       }
 
-      .fixture-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      @media (max-width: 700px) {
+        .form-grid { grid-template-columns: 1fr 1fr; }
       }
 
-      .fixture-teams {
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      .ha {
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-
-      .ha-home {
-        background: #1a3a28;
-        color: #4ade80;
-      }
-      .ha-away {
-        background: #2a1a1a;
-        color: #f87171;
-      }
-
-      .fixture-date {
-        font-size: 0.8rem;
+      .form-field label {
+        display: block;
+        font-size: 0.72rem;
         color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 5px;
       }
 
-      /* ── Table ─────────────────────────────────────────────────── */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.85rem;
-      }
+      .form-actions { display: flex; gap: 8px; align-items: flex-end; padding-top: 20px; }
+
+      /* ── Entries table ─────────────────────────────────────────── */
+      table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
 
       th {
         color: var(--muted);
-        font-size: 0.72rem;
+        font-size: 0.71rem;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 8px;
+        padding: 10px 16px;
         border-bottom: 1px solid var(--border);
-        text-align: center;
-      }
-
-      th:nth-child(2) {
         text-align: left;
       }
 
       td {
-        padding: 7px 8px;
+        padding: 12px 16px;
         border-bottom: 1px solid var(--border);
-        text-align: center;
-        color: var(--muted);
-      }
-
-      td:first-child {
-        color: var(--muted);
-        font-size: 0.8rem;
-      }
-      td:nth-child(2) {
-        text-align: left;
         color: var(--text);
-      }
-      td.pts {
-        color: var(--text) !important;
-        font-weight: 700;
+        vertical-align: middle;
       }
 
-      tr:last-child td {
-        border-bottom: none;
-      }
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background: rgba(255,255,255,0.02); }
 
-      .lfc td {
-        color: var(--red) !important;
-        font-weight: 600;
-      }
-      .lfc td:nth-child(2) {
-        color: var(--red) !important;
-      }
-      .lfc td.pts {
-        color: var(--red) !important;
-      }
+      td.muted { color: var(--muted); font-size: 0.82rem; }
 
-      /* ── Results ───────────────────────────────────────────────── */
-      .card-full {
-        grid-column: 1 / -1;
-      }
+      .pw-cell { display: flex; align-items: center; gap: 8px; }
 
-      .result-entry {
-        border-bottom: 1px solid var(--border);
-      }
-
-      .result-entry:last-child {
-        border-bottom: none;
-      }
-
-      .result-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 11px 0;
-      }
-
-      .result-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .result-badge {
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-
-      .result-w {
-        background: #1a3a28;
-        color: #4ade80;
-      }
-
-      .result-d {
-        background: #2a2a1a;
-        color: #fbbf24;
-      }
-
-      .result-l {
-        background: #2a1a1a;
-        color: #f87171;
-      }
-
-      .result-score {
+      .pw-text {
+        font-family: monospace;
+        letter-spacing: 0.08em;
         font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: 0.04em;
       }
 
-      /* ── Loading / error ───────────────────────────────────────── */
-      .loading,
-      .empty {
+      .reveal-btn {
+        background: none;
+        border: none;
         color: var(--muted);
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: color 0.2s;
+      }
+      .reveal-btn:hover { color: var(--text); }
+
+      .copy-btn {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: color 0.2s;
+      }
+      .copy-btn:hover { color: var(--accent); }
+
+      /* ── States ────────────────────────────────────────────────── */
+      .loading, .empty {
         text-align: center;
-        padding: 32px 0;
+        color: var(--muted);
+        padding: 40px 0;
         font-size: 0.875rem;
       }
 
       .err {
-        color: #f87171;
         text-align: center;
+        color: #f87171;
         padding: 24px 0;
         font-size: 0.875rem;
       }
+
+      .badge {
+        background: var(--accent-dim);
+        color: var(--accent);
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--success);
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      .toast.show { opacity: 1; }
     </style>
   </head>
   <body>
+
     <!-- ── Login ──────────────────────────────────────────────── -->
     <div id="login">
       <div class="login-box">
-        <h1>⚽ Dashboard</h1>
-        <p>Enter your password to continue</p>
+        <div class="icon">🔐</div>
+        <h1>Password Manager</h1>
+        <p>Enter your master password to unlock</p>
         <input
+          class="input"
           type="password"
-          id="pw"
-          placeholder="Password"
-          onkeydown="if (event.key === 'Enter') login();"
+          id="master-pw"
+          placeholder="Master password"
+          onkeydown="if(event.key==='Enter') unlock()"
           autofocus
         />
-        <button onclick="login()">Sign In</button>
-        <p class="error-msg" id="pw-error"></p>
+        <button class="btn btn-primary" id="unlock-btn" onclick="unlock()">Unlock</button>
+        <p class="error-msg" id="login-error"></p>
       </div>
     </div>
 
-    <!-- ── Dashboard ──────────────────────────────────────────── -->
-    <div id="dashboard">
+    <!-- ── Vault ──────────────────────────────────────────────── -->
+    <div id="vault">
       <header>
-        <h1>⚽ Dashboard</h1>
-        <select id="team-select" class="team-select" onchange="onTeamChange()">
-          <option value="64">Liverpool</option>
-        </select>
-        <div style="display: flex; align-items: center; gap: 16px">
-          <span id="last-updated"></span>
-          <button class="logout-btn" onclick="logout()">Sign out</button>
+        <h1>🔐 Password Manager</h1>
+        <div class="header-right">
+          <button class="btn btn-ghost" onclick="toggleAddForm()">+ Add Entry</button>
+          <button class="btn btn-ghost" onclick="signOut()">Sign out</button>
         </div>
       </header>
 
-      <div class="cards">
-        <!-- Selected team fixtures -->
-        <div class="card">
-          <div class="card-header">
-            <h2 id="fixtures-team">Liverpool</h2>
-            <span class="badge">Next fixtures</span>
+      <!-- Add entry form -->
+      <div class="card" id="add-card" style="display:none">
+        <div class="card-header">
+          <h2>New Entry</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Site / App</label>
+              <input class="input" id="f-site" placeholder="e.g. GitHub" style="margin:0" />
+            </div>
+            <div class="form-field">
+              <label>Username / Email</label>
+              <input class="input" id="f-user" placeholder="e.g. alex@email.com" style="margin:0" />
+            </div>
+            <div class="form-field">
+              <label>Password</label>
+              <input class="input" id="f-pass" type="password" placeholder="Password" style="margin:0" />
+            </div>
+            <div class="form-field">
+              <label>Description</label>
+              <input class="input" id="f-desc" placeholder="Optional note" style="margin:0" />
+            </div>
           </div>
-          <div class="card-body" id="fixtures-body">
-            <div class="loading">Loading...</div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="save-btn" onclick="saveEntry()" style="width:auto">Save</button>
+            <button class="btn btn-ghost" onclick="cancelAdd()">Cancel</button>
+            <p class="error-msg" id="save-error" style="margin:0;line-height:1"></p>
           </div>
         </div>
+      </div>
 
-        <!-- Premier League table -->
-        <div class="card">
-          <div class="card-header">
-            <h2>Premier League</h2>
-            <span class="badge">Table</span>
-          </div>
-          <div class="card-body" id="table-body">
-            <div class="loading">Loading...</div>
-          </div>
+      <!-- Entries -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Saved Passwords</h2>
+          <span class="badge" id="entry-count">0</span>
         </div>
-
-        <!-- Last 5 results -->
-        <div class="card card-full">
-          <div class="card-header">
-            <h2 id="results-team">Liverpool</h2>
-            <span class="badge">Last 5 Results</span>
-          </div>
-          <div class="card-body" id="results-body">
-            <div class="loading">Loading...</div>
-          </div>
+        <div id="entries-body">
+          <div class="loading">Loading...</div>
         </div>
       </div>
     </div>
 
-    <script>
-      // ── Config ───────────────────────────────────────────────────
-      const PASSWORD = "liverpool";
-      const API_URL =
-        "https://vvl4dwmcrj.execute-api.eu-west-2.amazonaws.com/prod/";
+    <div class="toast" id="toast"></div>
 
-      let selectedTeamId = 64;
+    <script>
+      // ── State ────────────────────────────────────────────────────
+      let API_URL = "";
+      let encryptionSalt = "";
+      let encryptionKey = null;   // CryptoKey — stays in memory only
+      let authToken = "";
+
+      // ── Boot ─────────────────────────────────────────────────────
+      (async () => {
+        try {
+          const cfg = await fetch("/config.json").then((r) => r.json());
+          API_URL = cfg.apiUrl.replace(/\/$/, "");
+          const authCfg = await fetch(`${API_URL}/auth/config`).then((r) => r.json());
+          encryptionSalt = authCfg.encryption_salt;
+        } catch (e) {
+          document.getElementById("login-error").textContent =
+            "Could not reach API — check config.json";
+        }
+      })();
 
       // ── Auth ─────────────────────────────────────────────────────
-      function login() {
-        const val = document.getElementById("pw").value;
-        if (val === PASSWORD) {
-          sessionStorage.setItem("auth", "1");
-          showDashboard();
-        } else {
-          document.getElementById("pw-error").textContent =
-            "Incorrect password";
-          document.getElementById("pw").value = "";
-          document.getElementById("pw").focus();
-        }
-      }
+      async function unlock() {
+        const pw = document.getElementById("master-pw").value;
+        const btn = document.getElementById("unlock-btn");
+        const errEl = document.getElementById("login-error");
+        errEl.textContent = "";
 
-      function showDashboard() {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        loadData();
-      }
+        if (!pw) { errEl.textContent = "Enter your master password"; return; }
+        if (!encryptionSalt) { errEl.textContent = "API not ready — reload the page"; return; }
 
-      function logout() {
-        sessionStorage.removeItem("auth");
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("login").style.display = "flex";
-        document.getElementById("pw").value = "";
-        document.getElementById("pw-error").textContent = "";
-        document.getElementById("pw").focus();
-      }
+        btn.disabled = true;
+        btn.textContent = "Unlocking…";
 
-      // Auto-login if already authenticated this session
-      if (sessionStorage.getItem("auth") === "1") showDashboard();
-
-      // ── Data ─────────────────────────────────────────────────────
-      async function loadData() {
         try {
-          const res = await fetch(`${API_URL}?teamId=${selectedTeamId}`);
-          const data = await res.json();
-          const teamName = getSelectedTeamName();
-          document.getElementById("fixtures-team").textContent = teamName;
-          document.getElementById("results-team").textContent = teamName;
-          populateTeamDropdown(data.pl_table);
-          renderFixtures(data.liverpool_fixtures);
-          renderTable(data.pl_table);
-          renderResults(data.liverpool_results);
-          document.getElementById("last-updated").textContent =
-            "Updated " + new Date().toLocaleTimeString("en-GB");
+          const verHash = await deriveVerificationHash(pw);
+
+          const res = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ verification_hash: verHash }),
+          });
+
+          if (!res.ok) {
+            errEl.textContent = "Incorrect password";
+            return;
+          }
+
+          const { token } = await res.json();
+          authToken = token;
+
+          // Derive encryption key — never leaves the browser
+          encryptionKey = await deriveEncryptionKey(pw, encryptionSalt);
+
+          document.getElementById("login").style.display = "none";
+          document.getElementById("vault").style.display = "block";
+          loadEntries();
         } catch (e) {
-          setError("fixtures-body");
-          setError("table-body");
-          setError("results-body");
+          errEl.textContent = "Login failed — " + e.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Unlock";
         }
       }
 
-      function onTeamChange() {
-        selectedTeamId = parseInt(document.getElementById("team-select").value);
-        loadData();
+      function signOut() {
+        authToken = "";
+        encryptionKey = null;
+        document.getElementById("master-pw").value = "";
+        document.getElementById("vault").style.display = "none";
+        document.getElementById("login").style.display = "flex";
+        document.getElementById("master-pw").focus();
       }
 
-      function getSelectedTeamName() {
-        const sel = document.getElementById("team-select");
-        return sel.options[sel.selectedIndex]?.text || "Liverpool";
+      // ── Entries ──────────────────────────────────────────────────
+      async function loadEntries() {
+        const el = document.getElementById("entries-body");
+        el.innerHTML = '<div class="loading">Loading…</div>';
+
+        try {
+          const res = await fetch(`${API_URL}/entries`, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (!res.ok) throw new Error("Fetch failed");
+
+          const { entries } = await res.json();
+
+          const decrypted = await Promise.all(
+            entries.map(async (e) => {
+              const plain = await decrypt(e.encrypted_data, e.iv, encryptionKey);
+              return { id: e.id, ...plain };
+            })
+          );
+
+          renderEntries(decrypted);
+        } catch (e) {
+          el.innerHTML = '<div class="err">Could not load entries — ' + e.message + "</div>";
+        }
       }
 
-      function populateTeamDropdown(table) {
-        const sel = document.getElementById("team-select");
-        const sorted = [...table].sort((a, b) => a.name.localeCompare(b.name));
-        sel.innerHTML = sorted
-          .map(
-            (t) =>
-              `<option value="${t.id}"${t.id === selectedTeamId ? " selected" : ""}>${t.name}</option>`,
-          )
-          .join("");
-      }
+      function renderEntries(entries) {
+        const el = document.getElementById("entries-body");
+        document.getElementById("entry-count").textContent = entries.length;
 
-      function setError(id) {
-        document.getElementById(id).innerHTML =
-          '<p class="err">Could not load data</p>';
-      }
-
-      // ── Fixtures renderer ─────────────────────────────────────────
-      function renderFixtures(fixtures) {
-        const el = document.getElementById("fixtures-body");
-
-        if (!fixtures || fixtures.length === 0) {
-          el.innerHTML = '<p class="empty">No upcoming fixtures</p>';
+        if (entries.length === 0) {
+          el.innerHTML = '<div class="empty">No entries yet — add your first password above</div>';
           return;
         }
 
-        el.innerHTML = fixtures
-          .map((f) => {
-            const haClass = f.home_away === "Home" ? "ha-home" : "ha-away";
-            const haLabel = f.home_away === "Home" ? "H" : "A";
-            const date = f.kickoff ? fmtDate(f.kickoff) : "TBC";
-
-            return `
-          <div class="fixture">
-            <div class="fixture-left">
-              <span class="fixture-teams">vs ${f.opponent}</span>
-              <span class="ha ${haClass}">${haLabel}</span>
-            </div>
-            <span class="fixture-date">${date}</span>
-          </div>`;
-          })
-          .join("");
-      }
-
-      // ── Table renderer ────────────────────────────────────────────
-      function renderTable(table) {
-        const el = document.getElementById("table-body");
-
-        if (!table || table.length === 0) {
-          el.innerHTML = '<p class="empty">No data available</p>';
-          return;
-        }
-
-        const rows = table
+        const rows = entries
           .map(
-            (t) => `
-        <tr class="${t.id === selectedTeamId ? "lfc" : ""}">
-          <td>${t.position}</td>
-          <td>${t.name}</td>
-          <td>${t.played}</td>
-          <td>${t.gd > 0 ? "+" + t.gd : t.gd}</td>
-          <td class="pts">${t.points}</td>
-        </tr>`,
+            (e) => `
+          <tr>
+            <td>${esc(e.site || "—")}</td>
+            <td>${esc(e.username || "—")}</td>
+            <td>
+              <div class="pw-cell">
+                <span class="pw-text" id="pw-${e.id}">••••••••</span>
+                <button class="reveal-btn" onclick="toggleReveal('${e.id}', '${esc(e.password || "")}')" title="Show/hide">👁</button>
+                <button class="copy-btn" onclick="copyPw('${e.id}', '${esc(e.password || "")}')" title="Copy">⎘</button>
+              </div>
+            </td>
+            <td class="muted">${esc(e.description || "")}</td>
+            <td>
+              <button class="btn btn-danger" onclick="deleteEntry('${e.id}')">Delete</button>
+            </td>
+          </tr>`
           )
           .join("");
 
         el.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Team</th><th>P</th><th>GD</th><th>Pts</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>`;
+          <table>
+            <thead>
+              <tr>
+                <th>Site / App</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Description</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>`;
       }
 
-      // ── Results renderer ─────────────────────────────────────
-      function renderResults(results) {
-        const el = document.getElementById("results-body");
+      // ── Add entry ────────────────────────────────────────────────
+      function toggleAddForm() {
+        const card = document.getElementById("add-card");
+        card.style.display = card.style.display === "none" ? "block" : "none";
+        if (card.style.display === "block") {
+          document.getElementById("f-site").focus();
+        }
+      }
 
-        if (!results || results.length === 0) {
-          el.innerHTML = '<p class="empty">No recent results</p>';
+      function cancelAdd() {
+        document.getElementById("add-card").style.display = "none";
+        ["f-site", "f-user", "f-pass", "f-desc"].forEach(
+          (id) => (document.getElementById(id).value = "")
+        );
+        document.getElementById("save-error").textContent = "";
+      }
+
+      async function saveEntry() {
+        const site = document.getElementById("f-site").value.trim();
+        const username = document.getElementById("f-user").value.trim();
+        const password = document.getElementById("f-pass").value;
+        const description = document.getElementById("f-desc").value.trim();
+        const errEl = document.getElementById("save-error");
+        const btn = document.getElementById("save-btn");
+
+        errEl.textContent = "";
+        if (!site || !username || !password) {
+          errEl.textContent = "Site, username and password are required";
           return;
         }
 
-        el.innerHTML = results
-          .map((r) => {
-            const haClass = r.home_away === "Home" ? "ha-home" : "ha-away";
-            const haLabel = r.home_away === "Home" ? "H" : "A";
-            const resultClass =
-              { W: "result-w", D: "result-d", L: "result-l" }[r.result] ||
-              "result-d";
-            const date = r.date ? fmtDate(r.date) : "TBC";
-            const score = `${r.score_team ?? "?"}–${r.score_opp ?? "?"}`;
+        btn.disabled = true;
+        btn.textContent = "Saving…";
 
-            return `
-              <div class="result-entry">
-                <div class="result-row">
-                  <div class="result-left">
-                    <span class="fixture-teams">vs ${r.opponent}</span>
-                    <span class="ha ${haClass}">${haLabel}</span>
-                    <span class="result-badge ${resultClass}">${r.result}</span>
-                    <span class="result-score">${score}</span>
-                  </div>
-                  <span class="fixture-date">${date}</span>
-                </div>
-              </div>`;
-          })
+        try {
+          const { iv, ciphertext } = await encrypt(
+            { site, username, password, description },
+            encryptionKey
+          );
+
+          const res = await fetch(`${API_URL}/entries`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ encrypted_data: ciphertext, iv }),
+          });
+
+          if (!res.ok) throw new Error("Save failed");
+
+          cancelAdd();
+          await loadEntries();
+          showToast("Entry saved ✓");
+        } catch (e) {
+          errEl.textContent = e.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Save";
+        }
+      }
+
+      // ── Delete entry ─────────────────────────────────────────────
+      async function deleteEntry(id) {
+        if (!confirm("Delete this entry? This cannot be undone.")) return;
+
+        try {
+          await fetch(`${API_URL}/entries/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          await loadEntries();
+          showToast("Entry deleted");
+        } catch (e) {
+          alert("Delete failed: " + e.message);
+        }
+      }
+
+      // ── Password reveal / copy ───────────────────────────────────
+      function toggleReveal(id, pw) {
+        const el = document.getElementById(`pw-${id}`);
+        el.textContent = el.textContent === "••••••••" ? pw : "••••••••";
+      }
+
+      async function copyPw(id, pw) {
+        try {
+          await navigator.clipboard.writeText(pw);
+          showToast("Password copied ✓");
+        } catch {
+          alert("Copy failed — use the reveal button instead");
+        }
+      }
+
+      // ── Toast ────────────────────────────────────────────────────
+      function showToast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 2500);
+      }
+
+      // ── Crypto ───────────────────────────────────────────────────
+      async function deriveVerificationHash(password) {
+        const enc = new TextEncoder();
+        const km = await crypto.subtle.importKey(
+          "raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]
+        );
+        const bits = await crypto.subtle.deriveBits(
+          { name: "PBKDF2", salt: enc.encode("verification-salt-v1"), iterations: 600000, hash: "SHA-256" },
+          km, 256
+        );
+        return Array.from(new Uint8Array(bits))
+          .map((b) => b.toString(16).padStart(2, "0"))
           .join("");
       }
 
-      // ── Helpers ───────────────────────────────────────────────────
-      function fmtDate(iso) {
-        return new Date(iso).toLocaleDateString("en-GB", {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+      async function deriveEncryptionKey(password, saltHex) {
+        const enc = new TextEncoder();
+        const km = await crypto.subtle.importKey(
+          "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
+        );
+        return crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: hexToBytes(saltHex), iterations: 600000, hash: "SHA-256" },
+          km,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["encrypt", "decrypt"]
+        );
+      }
+
+      async function encrypt(data, key) {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = await crypto.subtle.encrypt(
+          { name: "AES-GCM", iv },
+          key,
+          new TextEncoder().encode(JSON.stringify(data))
+        );
+        return { iv: toB64(iv), ciphertext: toB64(new Uint8Array(ct)) };
+      }
+
+      async function decrypt(ctB64, ivB64, key) {
+        const plain = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: fromB64(ivB64) },
+          key,
+          fromB64(ctB64)
+        );
+        return JSON.parse(new TextDecoder().decode(plain));
+      }
+
+      // ── Helpers ──────────────────────────────────────────────────
+      function hexToBytes(hex) {
+        const b = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2)
+          b[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+        return b;
+      }
+
+      function toB64(bytes) {
+        return btoa(String.fromCharCode(...bytes));
+      }
+
+      function fromB64(b64) {
+        return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      }
+
+      function esc(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
     </script>
   </body>
