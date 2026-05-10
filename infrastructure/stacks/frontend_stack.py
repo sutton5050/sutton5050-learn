@@ -74,12 +74,15 @@ function handler(event) {
 
         # ── Deploy landing page ─────────────────────────────────────
         # index.html at S3 root → served at sutton5050.com/
+        # prune=False so this deployment never deletes files outside frontend-root/
+        # (e.g. the passwords/ prefix managed by DeployPasswords below)
         s3deploy.BucketDeployment(
             self, "DeployRoot",
             sources=[s3deploy.Source.asset("../frontend-root")],
             destination_bucket=bucket,
+            prune=False,
             distribution=distribution,
-            distribution_paths=["/index.html"],
+            distribution_paths=["/index.html", "/styles.css", "/cards.js"],
         )
 
         # ── Deploy password manager ─────────────────────────────────
