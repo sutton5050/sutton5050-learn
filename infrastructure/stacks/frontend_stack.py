@@ -69,14 +69,23 @@ function handler(event) {
             ),
             domain_names=["sutton5050.com", "www.sutton5050.com"],
             certificate=cert,
-            # No default_root_object — root is intentionally free for a future
-            # landing page. The CloudFront Function above handles /passwords routing.
+            default_root_object="index.html",  # serves frontend-root/index.html at /
         )
 
-        # ── Deploy frontend ─────────────────────────────────────────
+        # ── Deploy landing page ─────────────────────────────────────
+        # index.html at S3 root → served at sutton5050.com/
+        s3deploy.BucketDeployment(
+            self, "DeployRoot",
+            sources=[s3deploy.Source.asset("../frontend-root")],
+            destination_bucket=bucket,
+            distribution=distribution,
+            distribution_paths=["/index.html"],
+        )
+
+        # ── Deploy password manager ─────────────────────────────────
         # Files land at s3://bucket/passwords/* → served at /passwords/*
         s3deploy.BucketDeployment(
-            self, "Deploy",
+            self, "DeployPasswords",
             sources=[s3deploy.Source.asset("../frontend")],
             destination_bucket=bucket,
             destination_key_prefix="passwords",
