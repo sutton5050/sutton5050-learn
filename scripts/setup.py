@@ -95,7 +95,7 @@ def main():
     print("✓ JWT secret stored in SSM Parameter Store")
 
     print()
-    print("Setup complete! You can now log in at https://sutton5050.com")
+    print("Setup complete! You can now log in at https://sutton5050.com/passwords")
     print()
     print("To change your master password in future, just re-run this script.")
 
