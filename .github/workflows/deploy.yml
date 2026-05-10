@@ -60,3 +60,20 @@ jobs:
       - name: Deploy frontend
         run: cdk deploy PasswordManagerFrontend --require-approval never
         working-directory: infrastructure
+
+      # Sync password manager files directly — more reliable than CDK BucketDeployment
+      # which skips re-runs when the source hash hasn't changed.
+      - name: Sync password manager to S3
+        run: |
+          BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name PasswordManagerFrontend \
+            --region eu-west-2 \
+            --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
+            --output text)
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name PasswordManagerFrontend \
+            --region eu-west-2 \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" \
+            --output text)
+          aws s3 sync frontend/ s3://$BUCKET/passwords/ --region eu-west-2 --delete
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/passwords/*"

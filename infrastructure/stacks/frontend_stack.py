@@ -85,16 +85,13 @@ function handler(event) {
             distribution_paths=["/index.html", "/styles.css", "/cards.js"],
         )
 
-        # ── Deploy password manager ─────────────────────────────────
-        # Files land at s3://bucket/passwords/* → served at /passwords/*
-        s3deploy.BucketDeployment(
-            self, "DeployPasswords",
-            sources=[s3deploy.Source.asset("../frontend")],
-            destination_bucket=bucket,
-            destination_key_prefix="passwords",
-            distribution=distribution,
-            distribution_paths=["/passwords/*"],
-        )
+        # ── Outputs ─────────────────────────────────────────────────
+        # BucketName and DistributionId are read by the CI deploy workflow
+        # to run aws s3 sync for the password manager files directly —
+        # more reliable than CDK BucketDeployment which skips re-runs
+        # when the source hash hasn't changed.
+        cdk.CfnOutput(self, "BucketName", value=bucket.bucket_name)
+        cdk.CfnOutput(self, "DistributionId", value=distribution.distribution_id)
 
         # ── Route53 ─────────────────────────────────────────────────
         zone = route53.HostedZone.from_hosted_zone_attributes(
