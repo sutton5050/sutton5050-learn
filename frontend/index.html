@@ -232,6 +232,20 @@
         border-radius: 99px;
       }
 
+      .search-input {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        outline: none;
+        width: 220px;
+        transition: border-color 0.2s;
+      }
+      .search-input:focus { border-color: var(--accent); }
+      .search-input::placeholder { color: var(--muted); }
+
       .toast {
         position: fixed;
         bottom: 24px;
@@ -315,8 +329,17 @@
       <!-- Entries -->
       <div class="card">
         <div class="card-header">
-          <h2>Saved Passwords</h2>
-          <span class="badge" id="entry-count">0</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>Saved Passwords</h2>
+            <span class="badge" id="entry-count">0</span>
+          </div>
+          <input
+            class="search-input"
+            id="search"
+            type="search"
+            placeholder="Search…"
+            oninput="filterEntries()"
+          />
         </div>
         <div id="entries-body">
           <div class="loading">Loading...</div>
@@ -332,6 +355,7 @@
       let encryptionSalt = "";
       let encryptionKey = null;   // CryptoKey — stays in memory only
       let authToken = "";
+      let allEntries = [];        // full decrypted list for client-side search
 
       // ── Boot ─────────────────────────────────────────────────────
       (async () => {
@@ -419,15 +443,35 @@
             })
           );
 
-          renderEntries(decrypted);
+          allEntries = decrypted;
+          // Re-apply any active search after a reload
+          filterEntries();
         } catch (e) {
           el.innerHTML = '<div class="err">Could not load entries — ' + e.message + "</div>";
         }
       }
 
+      // ── Search ───────────────────────────────────────────────────
+      function filterEntries() {
+        const q = document.getElementById("search").value.trim().toLowerCase();
+        if (!q) {
+          renderEntries(allEntries);
+          return;
+        }
+        const filtered = allEntries.filter((e) =>
+          (e.site || "").toLowerCase().includes(q) ||
+          (e.username || "").toLowerCase().includes(q) ||
+          (e.description || "").toLowerCase().includes(q)
+        );
+        renderEntries(filtered);
+      }
+
       function renderEntries(entries) {
         const el = document.getElementById("entries-body");
-        document.getElementById("entry-count").textContent = entries.length;
+        document.getElementById("entry-count").textContent =
+          entries.length === allEntries.length
+            ? entries.length
+            : `${entries.length} / ${allEntries.length}`;
 
         if (entries.length === 0) {
           el.innerHTML = '<div class="empty">No entries yet — add your first password above</div>';
