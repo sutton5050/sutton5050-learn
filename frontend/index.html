@@ -336,7 +336,7 @@
       // ── Boot ─────────────────────────────────────────────────────
       (async () => {
         try {
-          const cfg = await fetch("/config.json").then((r) => r.json());
+          const cfg = await fetch("config.json").then((r) => r.json());
           API_URL = cfg.apiUrl.replace(/\/$/, "");
           const authCfg = await fetch(`${API_URL}/auth/config`).then((r) => r.json());
           encryptionSalt = authCfg.encryption_salt;

@@ -38,16 +38,32 @@ class FrontendStack(cdk.Stack):
             ),
             domain_names=["sutton5050.com", "www.sutton5050.com"],
             certificate=cert,
-            default_root_object="index.html",
+            # No default_root_object — root is free for a future landing page.
+            # 403/404 from S3 (e.g. hitting /passwords with no trailing slash)
+            # are caught here and served as the SPA entry point.
+            error_responses=[
+                cloudfront.ErrorResponse(
+                    http_status=403,
+                    response_http_status=200,
+                    response_page_path="/passwords/index.html",
+                ),
+                cloudfront.ErrorResponse(
+                    http_status=404,
+                    response_http_status=200,
+                    response_page_path="/passwords/index.html",
+                ),
+            ],
         )
 
         # ── Deploy frontend ─────────────────────────────────────────
+        # Files land at s3://bucket/passwords/* → served at /passwords/*
         s3deploy.BucketDeployment(
             self, "Deploy",
             sources=[s3deploy.Source.asset("../frontend")],
             destination_bucket=bucket,
+            destination_key_prefix="passwords",
             distribution=distribution,
-            distribution_paths=["/*"],
+            distribution_paths=["/passwords/*"],
         )
 
         # ── Route53 ─────────────────────────────────────────────────
