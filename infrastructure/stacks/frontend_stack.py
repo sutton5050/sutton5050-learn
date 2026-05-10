@@ -28,6 +28,31 @@ class FrontendStack(cdk.Stack):
             "arn:aws:acm:us-east-1:902672427642:certificate/60d70fbe-d2d5-4417-9e90-aafc4958cc56",
         )
 
+        # ── CloudFront Function — /passwords routing ────────────────
+        # Handles two cases without relying on global error responses:
+        #   /passwords          → 301 redirect to /passwords/
+        #   /passwords/<path>   → rewrite to /passwords/index.html (SPA)
+        router = cloudfront.Function(
+            self, "PasswordsRouter",
+            code=cloudfront.FunctionCode.from_inline("""
+function handler(event) {
+    var uri = event.request.uri;
+    if (uri === '/passwords') {
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: { location: { value: '/passwords/' } }
+        };
+    }
+    if (uri.startsWith('/passwords/') && uri.lastIndexOf('.') < uri.lastIndexOf('/')) {
+        event.request.uri = '/passwords/index.html';
+    }
+    return event.request;
+}
+"""),
+            runtime=cloudfront.FunctionRuntime.JS_2_0,
+        )
+
         # ── CloudFront ──────────────────────────────────────────────
         distribution = cloudfront.Distribution(
             self, "Distribution",
@@ -35,24 +60,17 @@ class FrontendStack(cdk.Stack):
                 origin=origins.S3BucketOrigin.with_origin_access_control(bucket),
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                function_associations=[
+                    cloudfront.FunctionAssociation(
+                        function=router,
+                        event_type=cloudfront.FunctionEventType.VIEWER_REQUEST,
+                    )
+                ],
             ),
             domain_names=["sutton5050.com", "www.sutton5050.com"],
             certificate=cert,
-            # No default_root_object — root is free for a future landing page.
-            # 403/404 from S3 (e.g. hitting /passwords with no trailing slash)
-            # are caught here and served as the SPA entry point.
-            error_responses=[
-                cloudfront.ErrorResponse(
-                    http_status=403,
-                    response_http_status=200,
-                    response_page_path="/passwords/index.html",
-                ),
-                cloudfront.ErrorResponse(
-                    http_status=404,
-                    response_http_status=200,
-                    response_page_path="/passwords/index.html",
-                ),
-            ],
+            # No default_root_object — root is intentionally free for a future
+            # landing page. The CloudFront Function above handles /passwords routing.
         )
 
         # ── Deploy frontend ─────────────────────────────────────────
