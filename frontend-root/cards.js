@@ -6,7 +6,7 @@
 const apps = [
   // ── Communication & Daily ───────────────────────────────────────────────────
   {
-    favicon: "web.whatsapp.com",
+    favicon: "whatsapp.com",
     title: "WhatsApp",
     desc: "Messages and chats without picking up your phone.",
     href: "https://web.whatsapp.com",
@@ -40,7 +40,7 @@ const apps = [
     newTab: true,
   },
   {
-    favicon: "console.aws.amazon.com",
+    favicon: "aws.amazon.com",
     title: "AWS Console",
     desc: "Manage your cloud infrastructure.",
     href: "https://console.aws.amazon.com",
