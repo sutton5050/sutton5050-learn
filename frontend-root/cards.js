@@ -11,7 +11,6 @@ const apps = [
     desc: "Messages and chats without picking up your phone.",
     href: "https://web.whatsapp.com",
     live: true,
-    newTab: true,
   },
   {
     favicon: "calendar.google.com",
@@ -19,7 +18,6 @@ const apps = [
     desc: "Your schedule at a glance.",
     href: "https://calendar.google.com",
     live: true,
-    newTab: true,
   },
 
   // ── Productivity & Dev ──────────────────────────────────────────────────────
@@ -29,7 +27,6 @@ const apps = [
     desc: "Files, docs, and everything in between.",
     href: "https://drive.google.com",
     live: true,
-    newTab: true,
   },
   {
     favicon: "github.com",
@@ -37,7 +34,6 @@ const apps = [
     desc: "Repos, pull requests, and code.",
     href: "https://github.com",
     live: true,
-    newTab: true,
   },
   {
     favicon: "aws.amazon.com",
@@ -45,7 +41,6 @@ const apps = [
     desc: "Manage your cloud infrastructure.",
     href: "https://console.aws.amazon.com",
     live: true,
-    newTab: true,
   },
   {
     icon: "🔐",
@@ -53,7 +48,6 @@ const apps = [
     desc: "Encrypted password vault — all crypto happens in your browser.",
     href: "/passwords",
     live: true,
-    newTab: false,
   },
 
   // ── Entertainment ───────────────────────────────────────────────────────────
@@ -63,7 +57,6 @@ const apps = [
     desc: "Music, podcasts, and playlists.",
     href: "https://open.spotify.com",
     live: true,
-    newTab: true,
   },
   {
     favicon: "youtube.com",
@@ -71,7 +64,6 @@ const apps = [
     desc: "Videos, tutorials, and everything else.",
     href: "https://youtube.com",
     live: true,
-    newTab: true,
   },
   {
     favicon: "chess.com",
@@ -79,7 +71,6 @@ const apps = [
     desc: "Play, learn, and improve your game.",
     href: "https://chess.com",
     live: true,
-    newTab: true,
   },
 ];
 
@@ -97,9 +88,8 @@ function renderCards() {
 
   grid.innerHTML = apps.map((app) => {
     if (app.live) {
-      const target = app.newTab ? 'target="_blank" rel="noopener noreferrer"' : "";
       return `
-        <a class="card" href="${app.href}" ${target}>
+        <a class="card" href="${app.href}">
           ${iconHtml(app)}
           <div class="card-title">${app.title}</div>
           <div class="card-desc">${app.desc}</div>
