@@ -82,7 +82,7 @@ function handler(event) {
             destination_bucket=bucket,
             prune=False,
             distribution=distribution,
-            distribution_paths=["/index.html", "/styles.css", "/cards.js"],
+            distribution_paths=["/index.html", "/styles.css", "/cards.js", "/vault.js"],
         )
 
         # ── Outputs ─────────────────────────────────────────────────
