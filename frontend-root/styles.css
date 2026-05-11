@@ -82,6 +82,13 @@ a.card:hover {
 
 .card-icon { font-size: 2rem; }
 
+.card-favicon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .card-title {
   font-size: 1rem;
   font-weight: 600;
