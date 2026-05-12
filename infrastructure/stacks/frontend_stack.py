@@ -78,7 +78,7 @@ function handler(event) {
         # (e.g. the passwords/ prefix managed by DeployPasswords below)
         s3deploy.BucketDeployment(
             self, "DeployRoot",
-            sources=[s3deploy.Source.asset("../frontend-root")],
+            sources=[s3deploy.Source.asset("../dashboard")],
             destination_bucket=bucket,
             prune=False,
             distribution=distribution,

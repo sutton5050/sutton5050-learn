@@ -3,4 +3,4 @@ infrastructure/.venv/
 infrastructure/cdk.out/
 infrastructure/dist-config*.json
 
-frontend/config.json
+password-manager/config.json

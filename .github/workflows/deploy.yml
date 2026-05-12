@@ -54,7 +54,7 @@ jobs:
             --output text)
           # Strip trailing slash
           API_URL="${API_URL%/}"
-          echo "{\"apiUrl\": \"${API_URL}\"}" > frontend/config.json
+          echo "{\"apiUrl\": \"${API_URL}\"}" > password-manager/config.json
           echo "API URL written: $API_URL"
 
       - name: Deploy frontend
@@ -75,5 +75,5 @@ jobs:
             --region eu-west-2 \
             --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" \
             --output text)
-          aws s3 sync frontend/ s3://$BUCKET/passwords/ --region eu-west-2 --delete
+          aws s3 sync password-manager/ s3://$BUCKET/passwords/ --region eu-west-2 --delete
           aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/passwords/*"
